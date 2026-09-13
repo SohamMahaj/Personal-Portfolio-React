@@ -7,13 +7,12 @@ import "./Home.css";
 function Home() {
   const [loading, setLoading] = useState(true);
 
-  // Simulated loading sequence
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1000);
 
-    return () => clearTimeout(timer); // Cleanup timer
+    return () => clearTimeout(timer); 
   }, []);
 
   if (loading) {

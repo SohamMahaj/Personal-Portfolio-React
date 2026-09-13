@@ -1,40 +1,259 @@
-# Personal Portfolio React Application
+# Personal Portfolio Full Stack Application
 
-A modern, responsive, multi-page portfolio application built with React, Vite, and React Router. This project transforms a static HTML/CSS portfolio into a dynamic React Single Page Application (SPA).
+A modern, responsive, full stack portfolio application built with a React frontend (Vite, React Router) and a Node.js/Express backend API. This application serves dynamic project data, handles contact form submissions with server-side validation and file-based persistence, and manages loading, error, and recovery states gracefully.
 
 ## Technologies Used
-- React (Functional Components, Hooks)
-- Vite (Build Tool)
-- React Router DOM (Client-Side Routing)
-- Plain CSS (Custom CSS Variables for Theming)
+
+- **Frontend**: React 19, Vite, React Router DOM v7, CSS Variables / Vanilla CSS
+- **Backend**: Node.js, Express, CORS, Dotenv, File System (`fs/promises`)
+- **Data Storage**: JSON File Persistence (`server/data/projects.json`, `server/data/contacts.json`)
+
+---
+
+## Environment Configuration
+
+### Backend (`server/.env` and `server/.env.example`)
+```env
+PORT=5000
+CLIENT_ORIGIN=http://localhost:5173
+DATA_DIR=./data
+```
+
+### Frontend (`.env` and `.env.example`)
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+---
+
+## Data Storage Choice
+
+Data is persisted server-side using structured JSON files located in the `server/data/` directory:
+- `server/data/projects.json`: Stores all project items including IDs, titles, descriptions, tech stacks, image paths, feature lists, and repository links.
+- `server/data/contacts.json`: Stores submitted contact messages persistently across server restarts.
+
+---
+
+## Open Endpoint Notice
+
+In accordance with assignment requirements, the `GET /api/contact` endpoint is an **open endpoint** with no authentication required to allow evaluation and verification of persisted contact form submissions.
+
+---
 
 ## Setup and Run Instructions
 
 ### Prerequisites
-- Node.js installed
+- Node.js (v18 or higher recommended)
+- npm (Node Package Manager)
 
-### Installation
-1. Clone this repository or extract the zipped folder.
-2. Navigate to the project directory:
+### Step 1: Start the Backend Server
+1. Navigate into the `server` directory:
    ```bash
-   cd portfolio
+   cd server
    ```
-3. Install dependencies:
+2. Install backend dependencies:
    ```bash
    npm install
    ```
+3. Create `.env` from `.env.example` if not already present:
+   ```bash
+   cp .env.example .env
+   ```
+4. Start the Express backend:
+   ```bash
+   npm start
+   ```
+   *(or `npm run dev` for auto-reload during development)*
+   
+   The server will run on `http://localhost:5000`.
 
-### Running the Project Locally
-Start the development server:
-```bash
-npm run dev
-```
+### Step 2: Start the Frontend Application
+1. In a separate terminal, navigate to the root portfolio directory:
+   ```bash
+   cd portfolio
+   ```
+2. Install frontend dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the Vite development server:
+   ```bash
+   npm run dev
+   ```
+   The frontend will run on `http://localhost:5173`.
 
-### Building for Production
-Create an optimized production build:
+### Production Build
+To create an optimized production build of the frontend:
 ```bash
 npm run build
 ```
+
+---
+
+## API Documentation
+
+### Base URL
+`http://localhost:5000`
+
+---
+
+### 1. Health Check
+- **Endpoint**: `GET /`
+- **Description**: Verifies that the Express API server is active and running.
+- **Response Status**: `200 OK`
+- **Response Body**:
+```json
+{
+  "status": "ok",
+  "message": "Portfolio API is running"
+}
+```
+
+---
+
+### 2. Get All Projects
+- **Endpoint**: `GET /api/projects`
+- **Description**: Returns the list of all portfolio projects.
+- **Response Status**: `200 OK`
+- **Response Body**:
+```json
+[
+  {
+    "id": "timetrix",
+    "title": "TimeTrix",
+    "description": "Intelligent Academic Scheduling Platform designed to optimize and automate the generation of timetables using advanced algorithms.",
+    "techStack": ["React", "Node.js", "Express.js", "MongoDB", "Genetic Algorithms"],
+    "image": "/assets/Timetrix_photo.jpg",
+    "features": [
+      "Automated timetable generation",
+      "Conflict resolution for classes and professors",
+      "User-friendly dashboard",
+      "Export schedules to various formats"
+    ],
+    "link": "https://github.com/Alokkumarshah/TimeTrix"
+  }
+]
+```
+
+---
+
+### 3. Get Single Project by ID
+- **Endpoint**: `GET /api/projects/:id`
+- **Description**: Fetches details for a single project by its unique identifier.
+
+#### Success Response (`200 OK`)
+- **Example Request**: `GET /api/projects/timetrix`
+- **Response Body**:
+```json
+{
+  "id": "timetrix",
+  "title": "TimeTrix",
+  "description": "Intelligent Academic Scheduling Platform designed to optimize and automate the generation of timetables using advanced algorithms.",
+  "techStack": ["React", "Node.js", "Express.js", "MongoDB", "Genetic Algorithms"],
+  "image": "/assets/Timetrix_photo.jpg",
+  "features": [
+    "Automated timetable generation",
+    "Conflict resolution for classes and professors",
+    "User-friendly dashboard",
+    "Export schedules to various formats"
+  ],
+  "link": "https://github.com/Alokkumarshah/TimeTrix"
+}
+```
+
+#### Not Found Response (`404 Not Found`)
+- **Example Request**: `GET /api/projects/nonexistent-id`
+- **Response Body**:
+```json
+{
+  "error": "Project not found"
+}
+```
+
+---
+
+### 4. Submit Contact Form Message
+- **Endpoint**: `POST /api/contact`
+- **Headers**: `Content-Type: application/json`
+- **Description**: Validates submission fields server-side and persists the contact message.
+
+#### Request Body
+```json
+{
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "message": "Hello, I would like to discuss a project collaboration."
+}
+```
+
+#### Success Response (`201 Created`)
+```json
+{
+  "message": "Message sent successfully!",
+  "data": {
+    "id": "1789307697928",
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "message": "Hello, I would like to discuss a project collaboration.",
+    "createdAt": "2026-09-13T13:54:57.928Z"
+  }
+}
+```
+
+#### Validation Error Responses (`400 Bad Request`)
+- **Missing Name**:
+  ```json
+  { "error": "Name is required." }
+  ```
+- **Missing Email**:
+  ```json
+  { "error": "Email is required." }
+  ```
+- **Invalid Email Format**:
+  ```json
+  { "error": "Invalid email format. Must contain '@' and a valid domain." }
+  ```
+- **Missing Message**:
+  ```json
+  { "error": "Message is required." }
+  ```
+
+---
+
+### 5. List Contact Form Submissions
+- **Endpoint**: `GET /api/contact`
+- **Description**: Returns all received and persisted contact submissions (open verification endpoint).
+- **Response Status**: `200 OK`
+- **Response Body**:
+```json
+[
+  {
+    "id": "1789307697928",
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "message": "Hello, I would like to discuss a project collaboration.",
+    "createdAt": "2026-09-13T13:54:57.928Z"
+  }
+]
+```
+
+---
+
+### 6. Centralized 404 & Global Error Handling
+- **Undefined Route (`GET /api/doesnotexist`)**: Returns `404 Not Found`
+  ```json
+  {
+    "error": "Route not found"
+  }
+  ```
+- **Server / Middleware Errors**: Caught by Express error-handling middleware and returned as JSON without crashing the server:
+  ```json
+  {
+    "error": "Internal server error"
+  }
+  ```
+
+---
 
 ## Application Architecture
 
@@ -50,46 +269,19 @@ App
                 │    ├── About
                 │    │    ├── ExperienceCard
                 │    │    └── SkillCategory
-                │    ├── Projects
+                │    ├── Projects (Fetches GET /api/projects with loading/error state)
                 │    │    └── ProjectList
-                │    │         └── ProjectCard (Independent "View Details" state)
-                │    ├── ProjectDetails (Dynamic route using useParams)
+                │    │         └── ProjectCard (Independent "View Details" toggle)
+                │    ├── ProjectDetails (Fetches GET /api/projects/:id with loading/404 state)
                 │    ├── Contact
-                │    │    └── ContactForm (Controlled component with validation)
+                │    │    └── ContactForm (Posts to POST /api/contact with server validation)
                 │    └── NotFound (404 Page)
                 └── Footer
 ```
 
-### State Management (useState)
-The application leverages React's `useState` for state management without external libraries (like Redux or Zustand).
-
-1. **Theme State (`App.jsx`)**: Lifted to the top level. It manages whether the application is in `dark` or `light` mode. It is passed down to `Layout` and `Navbar` via props.
-2. **Contact Form State (`ContactForm.jsx`)**: The `formData` object handles the controlled inputs (name, email, message). `errors` handles validation state. `isSubmitDisabled` uses the error state to disable the submit button until validation passes. `submitSuccess` manages the success message.
-3. **Project Card State (`ProjectCard.jsx`)**: An independent `showDetails` state exists inside *each* `ProjectCard` instance to control the "View Details" toggle locally.
-4. **Loading State (`Home.jsx`)**: The `loading` state manages the initial ~1 second loading screen.
-
-### Side Effects (useEffect)
-1. **Home Loading Simulator (`Home.jsx`)**: A `useEffect` with an empty dependency array `[]` sets a `setTimeout` for 1000ms. It has a cleanup function `clearTimeout(timer)` to prevent memory leaks if the component unmounts before the timer fires.
-2. **Theme Persistence (`App.jsx`)**: A `useEffect` listens for changes to the `theme` state. When it changes, it persists the value to `localStorage` and applies the corresponding CSS class (`.dark` or `.light`) to the `document.body`. This effect runs on mount and whenever the theme changes.
-3. **Form Validation (`ContactForm.jsx`)**: A `useEffect` listens for changes to the `formData` object to perform validation on every keystroke, immediately updating the `errors` object and determining if the submit button should be disabled.
-
-### Prop Drilling
-Prop drilling (at least 2 levels deep) is intentionally demonstrated on the Projects page:
-- **`Projects.jsx`** imports the `projects` data and passes it via props to -> **`ProjectList.jsx`**
-- **`ProjectList.jsx`** iterates over the data and passes individual project fields via props to -> **`ProjectCard.jsx`**
-
-### Routing Structure
-The application uses `react-router-dom` with a `<BrowserRouter>`. A shared `<Layout>` wraps the `<Routes>`, containing the `<Navbar>` and `<Footer>` so they persist across navigation without page reloads.
-
-- `/Home`: The main landing page.
-- `/about`: Professional details, experience, and skills.
-- `/projects`: The list of all projects.
-- `/projects/:projectId`: A dynamic route using `useParams()` to extract the ID and render the specific project details.
-- `/contact`: The contact form page.
-- `*`: A catch-all 404 Not Found route.
-
-### Responsive Design & Accessibility
-- The layout relies heavily on flexbox and CSS Grid.
-- Breakpoints are established for Tablet (`max-width: 768px`) and Mobile (`max-width: 480px`).
-- Semantic HTML tags (`<nav>`, `<main>`, `<section>`, `<footer>`) are used throughout the application to ensure good accessibility.
-- Button elements have proper interactive states (`:hover`, `:disabled`, `:focus-visible`).
+### State Management & Data Fetching
+- **Projects Page (`Projects.jsx`)**: Uses `useEffect` and `fetch` to request `GET /api/projects`. Manages `loading`, `error`, and `projects` state. Includes a retry mechanism for network or server failures.
+- **Project Detail Page (`ProjectDetails.jsx`)**: Uses `useParams` to obtain `projectId` and calls `GET /api/projects/:id` in `useEffect`. Manages `loading`, `notFound`, `error`, and `project` state.
+- **Contact Page (`ContactForm.jsx`)**: Handles controlled form state (`formData`), validation rules, `isSubmitting` status, server error alerts, and success confirmation. Submits to `POST /api/contact`.
+- **Theme State (`App.jsx`)**: Persists dark/light preference to `localStorage` and toggles `.dark` / `.light` class on `document.body`.
+- **Prop Drilling**: Demonstrates clean multi-level component data passing on the Projects page (`Projects` -> `ProjectList` -> `ProjectCard`).

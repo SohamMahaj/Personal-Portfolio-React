@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { API_BASE_URL } from "../config";
 import "./ContactForm.css";
 
 function ContactForm() {
@@ -7,9 +8,9 @@ function ContactForm() {
     email: "",
     message: ""
   });
-  const [errors, setErrors] = useState({});
-  const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState("");
+  const [serverError, setServerError] = useState("");
 
   const validate = (data) => {
     let newErrors = {};
@@ -23,23 +24,45 @@ function ContactForm() {
     return newErrors;
   };
 
-  useEffect(() => {
-    const newErrors = validate(formData);
-    setErrors(newErrors);
-    setIsSubmitDisabled(Object.keys(newErrors).length > 0);
-  }, [formData]);
+  const errors = validate(formData);
+  const isSubmitDisabled = Object.keys(errors).length > 0;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (serverError) setServerError("");
+    if (submitSuccess) setSubmitSuccess("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isSubmitDisabled) {
-      setSubmitSuccess(true);
+    if (isSubmitDisabled || isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+      setServerError("");
+      setSubmitSuccess("");
+
+      const response = await fetch(`${API_BASE_URL}/api/contact`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit message");
+      }
+
+      setSubmitSuccess(data.message || "Message sent successfully!");
       setFormData({ name: "", email: "", message: "" });
-      setTimeout(() => setSubmitSuccess(false), 3000);
+    } catch (err) {
+      setServerError(err.message || "Unable to send message. Please check backend connection.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -47,7 +70,13 @@ function ContactForm() {
     <form className="contact-form" onSubmit={handleSubmit}>
       {submitSuccess && (
         <div className="success-message">
-          Message sent successfully! (Simulated)
+          {submitSuccess}
+        </div>
+      )}
+
+      {serverError && (
+        <div className="server-error-message">
+          {serverError}
         </div>
       )}
       
@@ -90,8 +119,8 @@ function ContactForm() {
         {errors.message && formData.message !== "" && <span className="error-text">{errors.message}</span>}
       </div>
 
-      <button type="submit" className="btn-primary" disabled={isSubmitDisabled}>
-        Send Message
+      <button type="submit" className="btn-primary" disabled={isSubmitDisabled || isSubmitting}>
+        {isSubmitting ? "Sending..." : "Send Message"}
       </button>
     </form>
   );
