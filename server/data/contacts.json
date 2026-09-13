@@ -5,5 +5,19 @@
     "email": "alice@example.com",
     "message": "Testing contact form integration",
     "createdAt": "2026-09-13T13:54:57.928Z"
+  },
+  {
+    "id": "1789309728373",
+    "name": "sameer mahajan",
+    "email": "sameer@example.com",
+    "message": "Screen recording",
+    "createdAt": "2026-09-13T14:28:48.373Z"
+  },
+  {
+    "id": "1789310718978",
+    "name": "Bob Builder",
+    "email": "bob@example.com",
+    "message": "Inquiry about project availability",
+    "createdAt": "2026-09-13T14:45:18.978Z"
   }
 ]

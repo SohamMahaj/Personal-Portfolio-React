@@ -255,6 +255,23 @@ npm run build
 
 ---
 
+## API Testing (curl Commands & Test Suite)
+
+Complete `curl` commands, expected status codes, and sample success/failure responses covering all backend requirements (**B1–B7**) are documented in:
+
+👉 **[`docs/api-tests/backend-api-tests.md`](./docs/api-tests/backend-api-tests.md)**
+
+This includes test cases for:
+- **B1**: Server health check (`GET /`)
+- **B2**: Project list retrieval (`GET /api/projects`)
+- **B3**: Single project retrieval and 404 handling (`GET /api/projects/:id`)
+- **B4**: Contact form submission and server-side validation rules (`POST /api/contact`)
+- **B5**: Stored submissions verification list (`GET /api/contact`)
+- **B6**: Centralized 404 handler and global error catching (`GET /api/doesnotexist`)
+- **B7**: CORS preflight verification and unauthorized origin rejection
+
+---
+
 ## Application Architecture
 
 ### Component Tree
@@ -285,3 +302,7 @@ App
 - **Contact Page (`ContactForm.jsx`)**: Handles controlled form state (`formData`), validation rules, `isSubmitting` status, server error alerts, and success confirmation. Submits to `POST /api/contact`.
 - **Theme State (`App.jsx`)**: Persists dark/light preference to `localStorage` and toggles `.dark` / `.light` class on `document.body`.
 - **Prop Drilling**: Demonstrates clean multi-level component data passing on the Projects page (`Projects` -> `ProjectList` -> `ProjectCard`).
+
+
+## Video Recording Sample
+https://drive.google.com/file/d/1vteSHqZLUM59YzhtxvrUsJWLjxj47t_4/view?usp=drive_link
